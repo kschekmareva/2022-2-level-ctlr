@@ -2,7 +2,9 @@
 Crawler implementation
 """
 import datetime
+import time
 from pathlib import Path
+import random
 from typing import Pattern, Union
 import json
 
@@ -55,12 +57,13 @@ class Config:
         self.path_to_config = path_to_config
         self.config_dto = self._extract_config_content()
         self._validate_config_content()
-        self._get_seed_urls = self.get_seed_urls()
-        self._num_articles = self.get_num_articles()
-        self._get_headers = self.get_headers()
-        self._get_encoding = self.get_encoding()
-        self._get_timeout = self.get_timeout()
-        self._verify_certificate = self.get_verify_certificate()
+        self._seed_urls = self.config_dto.seed_urls
+        self._headers = self.config_dto.headers
+        self._num_articles = self.config_dto.total_articles
+        self._encoding = self.config_dto.encoding
+        self._timeout = self.config_dto.timeout
+        self._should_verify_certificate = self.config_dto.verify_certificate
+        self._headless_mode = self.config_dto.headless_mode
 
     def _extract_config_content(self) -> ConfigDTO:
         """
@@ -80,7 +83,7 @@ class Config:
             raise IncorrectSeedURLError
 
         if not isinstance(self.config_dto.total_articles_to_find_and_parse, int) \
-                or not 1 < self.config_dto.total_articles_to_find_and_parse < 150:
+                or self.config_dto.total_articles_to_find_and_parse > const.NUM_ARTICLES_UPPER_LIMIT:
             raise IncorrectNumberOfArticlesError
 
         if not self.config_dto.seed_urls and not isinstance(self.config_dto.headers, dict) \
@@ -91,7 +94,8 @@ class Config:
         if not isinstance(self.config_dto.encoding, str):
             raise IncorrectEncodingError
 
-        if not isinstance(self.config_dto.timeout, int) or self.config_dto.timeout < 1 or self.config_dto.timeout > 60:
+        if not isinstance(self.config_dto.timeout, int) or self.config_dto.timeout < const.TIMEOUT_LOWER_LIMIT \
+                or self.config_dto.timeout > const.TIMEOUT_UPPER_LIMIT:
             raise IncorrectTimeoutError
 
         if not isinstance(self.config_dto.verify_certificate, bool):
@@ -101,43 +105,43 @@ class Config:
         """
         Retrieve seed urls
         """
-        return self.config_dto.seed_urls
+        return self._seed_urls
 
     def get_num_articles(self) -> int:
         """
         Retrieve total number of articles to scrape
         """
-        return self.config_dto.total_articles
+        return self._num_articles
 
     def get_headers(self) -> dict[str, str]:
         """
         Retrieve headers to use during requesting
         """
-        return self.config_dto.headers
+        return self._headers
 
     def get_encoding(self) -> str:
         """
         Retrieve encoding to use during parsing
         """
-        return self.config_dto.encoding
+        return self._encoding
 
     def get_timeout(self) -> int:
         """
         Retrieve number of seconds to wait for response
         """
-        return self.config_dto.timeout
+        return self._timeout
 
     def get_verify_certificate(self) -> bool:
         """
         Retrieve whether to verify certificate
         """
-        return self.config_dto.verify_certificate
+        return self._should_verify_certificate
 
     def get_headless_mode(self) -> bool:
         """
         Retrieve whether to use headless mode
         """
-        return self.config_dto.headless_mode
+        return self._headless_mode
 
 
 def make_request(url: str, config: Config) -> requests.models.Response:
@@ -145,7 +149,12 @@ def make_request(url: str, config: Config) -> requests.models.Response:
     Delivers a response from a request
     with given configuration
     """
-    pass
+    time.sleep(random.randint(const.TIMEOUT_LOWER_LIMIT, const.TIMEOUT_UPPER_LIMIT))
+    response = requests.get(url,
+                            timeout=config.get_timeout(),
+                            headers=config.get_headers(),
+                            verify=config.get_verify_certificate())
+    return response
 
 
 class Crawler:
