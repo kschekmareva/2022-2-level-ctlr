@@ -169,6 +169,7 @@ class Crawler:
         self.config = config
         self._urls = []
 
+
     @staticmethod
     def _extract_url(article_bs: BeautifulSoup) -> str:
         """
