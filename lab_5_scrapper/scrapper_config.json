@@ -2,7 +2,6 @@
     "seed_urls": ["https://nn-now.ru/category/novosti/"],
     "headers": {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "accept-encoding": "gzip, deflate, br",
         "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
         "cache-control": "max-age=0",
         "cookie": "_ym_uid=1679297009204816608; _ym_d=1679297009; _ga=GA1.2.328727136.1679297010; _ym_isad=1; _gid=GA1.2.538625410.1680945119; _gat_gtag_UA_127684046_1=1; _ym_visorc=w",
