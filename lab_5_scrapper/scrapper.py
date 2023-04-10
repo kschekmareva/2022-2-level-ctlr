@@ -11,7 +11,6 @@ import time
 from pathlib import Path
 from typing import Pattern, Union
 
-
 import requests
 from bs4 import BeautifulSoup
 
