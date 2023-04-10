@@ -187,7 +187,6 @@ class Crawler:
         while len(self._urls) < self.config.get_num_articles():
             print('while')
             page = make_request(url, config=self.config)
-            # page.encoding = self.config.get_encoding()
             page = page.content.decode(self.config.get_encoding())
             soup = BeautifulSoup(page, features="html.parser")
             h3_with_articles = soup.find_all('h3')
