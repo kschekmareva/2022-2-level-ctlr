@@ -2,22 +2,22 @@
 Crawler implementation
 """
 import datetime
+import json
 import os
+import random
 import re
 import shutil
 import time
 from pathlib import Path
-import random
 from typing import Pattern, Union
-import json
+
 
 import requests
 from bs4 import BeautifulSoup
 
+import core_utils.constants as const
 from core_utils.article.article import Article
 from core_utils.config_dto import ConfigDTO
-
-import core_utils.constants as const
 
 
 class IncorrectSeedURLError(Exception):
