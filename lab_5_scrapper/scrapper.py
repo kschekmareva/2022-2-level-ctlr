@@ -261,7 +261,7 @@ class HTMLParser:
         div = article_soup.find('div', class_='entry-content')
         text = ''
         for p_tag in div.find_all('p'):
-            if 'Фото:' in p_tag.text or re.search(r'\([0-9]+\+\)', p.text):
+            if 'Фото:' in p_tag.text or re.search(r'\([0-9]+\+\)', p_tag.text):
                 break
             text += p_tag.text
         self.article.text = text
