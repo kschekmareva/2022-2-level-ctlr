@@ -260,10 +260,10 @@ class HTMLParser:
         """
         div = article_soup.find('div', class_='entry-content')
         text = ''
-        for p in div.find_all('p'):
-            if 'Фото:' in p.text or re.search(r'\([0-9]+\+\)', p.text):
+        for p_tag in div.find_all('p'):
+            if 'Фото:' in p_tag.text or re.search(r'\([0-9]+\+\)', p.text):
                 break
-            text += p.text
+            text += p_tag.text
         self.article.text = text
 
     def _fill_article_with_meta_information(self, article_soup: BeautifulSoup) -> None:
