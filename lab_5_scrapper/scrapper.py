@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 
 import core_utils.constants as const
 from core_utils.article.article import Article
-from core_utils.article.io import to_raw, to_meta
+from core_utils.article.io import to_meta, to_raw
 from core_utils.config_dto import ConfigDTO
 
 
@@ -279,6 +279,13 @@ class HTMLParser:
                 self.article.author = [a_author.text]
             else:
                 self.article.author = ['NOT FOUND']
+
+        topics = article_soup.find('div', class_='entry-tags')
+        if topics:
+            lst = []
+            for elem in topics.find_all('a'):
+                lst.append(elem.text)
+            self.article.topics = lst
 
         title = article_soup.find('h1')
         self.article.title = title.text
