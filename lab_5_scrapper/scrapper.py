@@ -208,7 +208,7 @@ class Crawler:
         if link:
             href = link.get('href')
         else:
-            href = None
+            href = ""
         return href
 
     def find_articles(self) -> None:
@@ -221,12 +221,11 @@ class Crawler:
         while len(self.urls) < self.config.get_num_articles():
             print(url)
             page = make_request(url, config=self.config)
-            page = page.content.decode(self.config.get_encoding())
-            soup = BeautifulSoup(page, features="html.parser")
+            soup = BeautifulSoup(page.text, features="html.parser")
             h3_with_articles = soup.find_all('h3')
             for elem in h3_with_articles:
                 url_ = self._extract_url(elem)
-                if url_ is not None:
+                if url_:
                     self.urls.append(url_)
                 if len(self.urls) >= self.config.get_num_articles():
                     return
