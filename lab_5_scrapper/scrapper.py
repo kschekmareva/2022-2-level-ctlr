@@ -209,7 +209,7 @@ class Crawler:
             href = link.get('href')
         else:
             href = ""
-        return href
+        return str(href)
 
     def find_articles(self) -> None:
         """
