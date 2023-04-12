@@ -353,5 +353,61 @@ def main() -> None:
             to_meta(article)
 
 
+class CrawlerRecursive(Crawler):
+    def __init__(self, config: Config) -> None:
+        super().__init__(config)
+        self.count_of_page = 1
+        self._config = config
+        self.url = config.get_seed_urls()[0]
+        self.load_info_from_file()
+
+    def load_info_from_file(self) -> None:
+        current_path = Path(__file__)
+        crawler_data_path = current_path.parent / 'crawler_recursive_data.json'
+        if crawler_data_path.exists():
+            with open('crawler_recursive_data.json', 'r', encoding='utf-8') as infile:
+                data = json.load(infile)
+                self.count_of_page = data['count_of_page']
+                self.urls = data['urls']
+
+    def save_data_in_file(self) -> None:
+        data = {
+            'count_of_page': self.count_of_page,
+            'urls': self.urls
+        }
+        with open('crawler_recursive_data.json', 'w', encoding='utf-8') as outfile:
+            json.dump(data, outfile, ensure_ascii=True, indent=2)
+
+    def find_articles(self) -> None:
+        url = f"{self.url}/page/{self.count_of_page}"
+        page = make_request(url, self._config)
+        soup = BeautifulSoup(page.text, "html.parser")
+        for elem in soup.find_all('h3'):
+            current_url = self._extract_url(elem)
+            if current_url in self.urls:
+                continue
+            self.urls.append(current_url)
+            self.save_data_in_file()
+            if len(self.urls) >= self._config.get_num_articles():
+                return
+
+        self.count_of_page += 1
+        self.find_articles()
+
+
+def main_recursive() -> None:
+    config = Config(const.CRAWLER_CONFIG_PATH)
+    prepare_environment(const.ASSETS_PATH)
+    crawler_recursive = CrawlerRecursive(config)
+    crawler_recursive.find_articles()
+    for id_, url in enumerate(crawler_recursive.urls, 1):
+        print(id_, url)
+        parser = HTMLParser(full_url=url, article_id=id_, config=config)
+        article = parser.parse()
+        if isinstance(article, Article):
+            to_raw(article)
+            to_meta(article)
+
+
 if __name__ == "__main__":
     main()
