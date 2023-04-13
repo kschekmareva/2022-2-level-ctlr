@@ -219,7 +219,6 @@ class Crawler:
         url = start_url
         count_of_page = 1
         while len(self.urls) < self.config.get_num_articles():
-            print(url)
             page = make_request(url, config=self.config)
             soup = BeautifulSoup(page.text, features="html.parser")
             h3_with_articles = soup.find_all('h3')
@@ -279,15 +278,15 @@ class HTMLParser:
             else:
                 self.article.author = ['NOT FOUND']
 
+        title = article_soup.find('h1')
+        self.article.title = title.text
+
         topics = article_soup.find('div', class_='entry-tags')
         if topics:
             lst = []
             for elem in topics.find_all('a'):
                 lst.append(elem.text)
             self.article.topics = lst
-
-        title = article_soup.find('h1')
-        self.article.title = title.text
 
     @staticmethod
     def unify_date_format(date_str: str) -> datetime.datetime:
@@ -345,7 +344,6 @@ def main() -> None:
     crawler = Crawler(config)
     crawler.find_articles()
     for id_, url in enumerate(crawler.urls, 1):
-        print(id_, url)
         parser = HTMLParser(full_url=url, article_id=id_, config=config)
         article = parser.parse()
         if isinstance(article, Article):
@@ -357,6 +355,7 @@ class CrawlerRecursive(Crawler):
     """
      Recursive Crawler implementation
     """
+
     def __init__(self, config: Config) -> None:
         super().__init__(config)
         self.count_of_page = 1
@@ -416,7 +415,6 @@ def main_recursive() -> None:
     crawler_recursive = CrawlerRecursive(config)
     crawler_recursive.find_articles()
     for id_, url in enumerate(crawler_recursive.urls, 1):
-        print(id_, url)
         parser = HTMLParser(full_url=url, article_id=id_, config=config)
         article = parser.parse()
         if isinstance(article, Article):
