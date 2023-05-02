@@ -58,7 +58,7 @@ class CorpusManager:
             raise InconsistentDatasetError("Number of meta and raw files are not equal")
 
         if not meta_files or not raw_files:
-            raise EmptyDirectoryError("Directory is empty")
+            raise EmptyDirectoryError("The directory is empty")
 
         file_ids = [int(file.name.split("_")[0]) for file in raw_files]
         if len(file_ids) != len(set(file_ids)):
