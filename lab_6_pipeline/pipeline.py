@@ -10,7 +10,7 @@ from pymystem3 import Mystem
 
 import core_utils.constants as const
 from core_utils.article.article import SentenceProtocol, split_by_sentence, get_article_id_from_filepath
-from core_utils.article.io import from_raw, to_cleaned
+from core_utils.article.io import from_raw, to_cleaned, to_conllu
 from core_utils.article.ud import OpencorporaTagProtocol, TagConverter
 
 
@@ -198,11 +198,20 @@ class MystemTagConverter(TagConverter):
         """
         Converts the Mystem tags into the UD format
         """
+        extracted_tags = re.findall(r'[а-я]+', tags)
+        ud_tags = {}
+        for tag in extracted_tags:
+            for category in (self.case, self.number, self.gender, self.animacy, self.tense):
+                if tag in self._tag_mapping[category]:
+                    ud_tags[category] = self._tag_mapping[category][tag]
+        return '|'.join(f'{k}={v}' for k, v in sorted(ud_tags.items()))
 
     def convert_pos(self, tags: str) -> str:  # type: ignore
         """
         Extracts and converts the POS from the Mystem tags into the UD format
         """
+        pos = re.match(r'\w+', tags)[0]
+        return self._tag_mapping[self.pos][pos]
 
 
 class OpenCorporaTagConverter(TagConverter):
@@ -214,11 +223,21 @@ class OpenCorporaTagConverter(TagConverter):
         """
         Extracts and converts POS from the OpenCorpora tags into the UD format
         """
+        return self._tag_mapping[self.pos][tags.POS]
 
     def convert_morphological_tags(self, tags: OpencorporaTagProtocol) -> str:  # type: ignore
         """
         Converts the OpenCorpora tags into the UD format
         """
+        ud_tags = {}
+        lst = [[self.gender, tags.gender], [self.number, tags.number], [self.animacy, tags.animacy],
+               [self.case, tags.case]]
+
+        for elem in lst:
+            k, v = elem
+            if v is not None:
+                ud_tags[k] = self._tag_mapping[k][v]
+        return '|'.join(f'{k}={v}' for k, v in ud_tags.items())
 
 
 class MorphologicalAnalysisPipeline:
@@ -282,6 +301,8 @@ class MorphologicalAnalysisPipeline:
             article = from_raw(value.get_raw_text_path(), value)
             article.set_conllu_sentences(self._process(article.get_raw_text()))
             to_cleaned(article)
+            to_conllu(article, include_morphological_tags=False, include_pymorphy_tags=False)
+            to_conllu(article, include_morphological_tags=True, include_pymorphy_tags=False)
 
 
 class AdvancedMorphologicalAnalysisPipeline(MorphologicalAnalysisPipeline):
