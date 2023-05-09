@@ -136,6 +136,8 @@ class ConlluToken:
         text = self._text
         lemma = self._morphological_parameters.lemma
         pos = self._morphological_parameters.pos
+        if pos is None:
+            pos = 'X'
         xpos = '_'
         feats = '_'
         if include_morphological_tags:
@@ -332,7 +334,7 @@ class AdvancedMorphologicalAnalysisPipeline(MorphologicalAnalysisPipeline):
         """
         super().__init__(corpus_manager)
         self._backup_tag_converter = OpenCorporaTagConverter(
-            Path(__file__).parent / 'data' / 'pymorphy2_tags_mapping.json')
+            Path(__file__).parent / 'data' / 'opencorpora_tags_mapping.json')
         self._backup_analyzer = pymorphy2.MorphAnalyzer()
 
     def _process(self, text: str) -> List[ConlluSentence]:
@@ -354,12 +356,9 @@ class AdvancedMorphologicalAnalysisPipeline(MorphologicalAnalysisPipeline):
                     morph_tags = analyzed_content['analysis'][0]['gr']
                     pos = self._tag_converter.convert_pos(morph_tags)
                     if pos == 'NOUN':
-                        print(analyzed_content)
-                        print(analyzed_content['text'])
                         lemma = self._backup_analyzer.parse(analyzed_content['text'])[0].normal_form
                         all_tags = self._backup_analyzer.parse(analyzed_content['text'])[0].tag
-                        new_pos = self._backup_tag_converter.convert_pos(all_tags)
-                        pos = new_pos if new_pos is not None else 'X'
+                        pos = self._backup_tag_converter.convert_pos(all_tags)
                         tags = self._backup_tag_converter.convert_morphological_tags(all_tags)
                     else:
                         lemma = analyzed_content['analysis'][0]['lex']
@@ -398,7 +397,7 @@ class AdvancedMorphologicalAnalysisPipeline(MorphologicalAnalysisPipeline):
             article = from_raw(value.get_raw_text_path(), value)
             article.set_conllu_sentences(self._process(article.get_raw_text()))
             to_cleaned(article)
-            to_conllu(article, include_morphological_tags=True, include_pymorphy_tags=True)
+            to_conllu(article, include_morphological_tags=True, include_pymorphy_tags=False)
 
 
 def main() -> None:
@@ -406,7 +405,7 @@ def main() -> None:
     Entrypoint for pipeline module
     """
     corpus_manager = CorpusManager(const.ASSETS_PATH)
-    MorphologicalAnalysisPipeline(corpus_manager).run()
+    # MorphologicalAnalysisPipeline(corpus_manager).run()
     AdvancedMorphologicalAnalysisPipeline(corpus_manager).run()
 
 
