@@ -211,8 +211,9 @@ class MystemTagConverter(TagConverter):
         ud_tags = {}
         for tag in extracted_tags:
             for category in (self.case, self.number, self.gender, self.animacy, self.tense):
-                if tag in self._tag_mapping[category]:
+                if tag in self._tag_mapping[category] and category not in ud_tags:
                     ud_tags[category] = self._tag_mapping[category][tag]
+                    break
         return '|'.join(f'{k}={v}' for k, v in sorted(ud_tags.items()))
 
     def convert_pos(self, tags: str) -> str:  # type: ignore
@@ -405,7 +406,7 @@ def main() -> None:
     Entrypoint for pipeline module
     """
     corpus_manager = CorpusManager(const.ASSETS_PATH)
-    # MorphologicalAnalysisPipeline(corpus_manager).run()
+    MorphologicalAnalysisPipeline(corpus_manager).run()
     AdvancedMorphologicalAnalysisPipeline(corpus_manager).run()
 
 
