@@ -132,22 +132,15 @@ class ConlluToken:
         """
         String representation of the token for conllu files
         """
-        position = str(self._position)
-        text = self._text
-        lemma = self._morphological_parameters.lemma
         pos = self._morphological_parameters.pos
         if pos is None:
             pos = 'X'
-        xpos = '_'
         feats = '_'
         if include_morphological_tags:
             feats = self._morphological_parameters.tags if self._morphological_parameters.tags else '_'
-        head = '0'
-        deprel = 'root'
-        deps = '_'
-        misc = '_'
 
-        return '\t'.join([position, text, lemma, pos, xpos, feats, head, deprel, deps, misc])
+        return '\t'.join([str(self._position), self._text,
+                          self._morphological_parameters.lemma, pos, '_', feats, '0', 'root', '_', '_'])
 
     def get_cleaned(self) -> str:
         """
@@ -316,8 +309,7 @@ class MorphologicalAnalysisPipeline:
         """
         Performs basic preprocessing and writes processed text to files
         """
-        for key, value in self._corpus_manager.get_articles().items():
-            article = from_raw(value.get_raw_text_path(), value)
+        for article in self._corpus_manager.get_articles().values():
             article.set_conllu_sentences(self._process(article.get_raw_text()))
             to_cleaned(article)
             to_conllu(article, include_morphological_tags=False, include_pymorphy_tags=False)
@@ -394,11 +386,10 @@ class AdvancedMorphologicalAnalysisPipeline(MorphologicalAnalysisPipeline):
         """
         Performs basic preprocessing and writes processed text to files
         """
-        for key, value in self._corpus_manager.get_articles().items():
-            article = from_raw(value.get_raw_text_path(), value)
+        for article in self._corpus_manager.get_articles().values():
             article.set_conllu_sentences(self._process(article.get_raw_text()))
             to_cleaned(article)
-            to_conllu(article, include_morphological_tags=True, include_pymorphy_tags=False)
+            to_conllu(article, include_morphological_tags=True, include_pymorphy_tags=True)
 
 
 def main() -> None:
